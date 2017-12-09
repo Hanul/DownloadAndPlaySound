@@ -1,4 +1,4 @@
-package co.hanul.downloadandplaysound;
+package ${YYAndroidPackageName};
 
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
@@ -17,7 +17,7 @@ public class DownloadAndPlaySound {
 
     private String tag;
     private URL url;
-    private String filename;
+    public String filename;
 
     private String folderPath;
     private String path;
@@ -26,7 +26,7 @@ public class DownloadAndPlaySound {
     private MediaPlayer mediaPlayer = new MediaPlayer();
     private int currentPosition;
 
-    public DownloadAndPlaySound(String tag, String url, String filename, boolean isToUseSoundPool) {
+    public DownloadAndPlaySound(String tag, String url, String filename) {
 
         this.tag = tag;
         try {
@@ -39,12 +39,10 @@ public class DownloadAndPlaySound {
         folderPath = Environment.getExternalStorageDirectory() + "/" + tag + "/gamesound/";
         path = folderPath + filename;
 
-        // 이미 파일이 존재하면 즉시 준비 완료
         if (new File(path).exists() == true) {
             ready();
         }
 
-        // 아니면 다운로드 시작
         else {
             File folder = new File(folderPath);
             if (folder.exists() != true) {
@@ -61,6 +59,10 @@ public class DownloadAndPlaySound {
         });
     }
 
+    public boolean isPlaying() {
+        return mediaPlayer != null && mediaPlayer.isPlaying() == true;
+    }
+
     public void release() {
 
         if (mediaPlayer != null) {
@@ -72,6 +74,10 @@ public class DownloadAndPlaySound {
             mediaPlayer.release();
             mediaPlayer = null;
         }
+    }
+
+    public boolean isReleased() {
+        return mediaPlayer == null;
     }
 
     public void pause() {
@@ -120,14 +126,12 @@ public class DownloadAndPlaySound {
                     byte data[] = new byte[4096];
                     int count;
                     while ((count = input.read(data)) != -1) {
-                        // Task가 중단되면 끝
                         if (isCancelled() == true) {
                             input.close();
                             return null;
                         }
                         output.write(data, 0, count);
                     }
-                    // 다운로드가 끝나면 준비 완료
                     ready();
                 }
             } catch (Exception e) {

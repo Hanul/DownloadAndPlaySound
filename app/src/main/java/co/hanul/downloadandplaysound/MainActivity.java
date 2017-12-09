@@ -16,6 +16,7 @@ public class MainActivity extends Activity {
         findViewById(R.id.play_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //downloadAndPlaySound = new DownloadAndPlaySound("DownloadAndPlaySoundTest7", "http://cwserver3.btncafe.com:8523/R/gamesound/test", "bgm_home.ogg");
                 downloadAndPlaySound = new DownloadAndPlaySound("DownloadAndPlaySoundTest6", "http://cwserver3.btncafe.com:8523/R/gamesound/bgm_home.ogg", "bgm_home.ogg");
             }
         });

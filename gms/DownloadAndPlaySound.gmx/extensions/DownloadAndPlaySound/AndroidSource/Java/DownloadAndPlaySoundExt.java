@@ -49,7 +49,7 @@ public class DownloadAndPlaySoundExt implements IExtensionBase {
 			Iterator<Map.Entry<String, DownloadAndPlaySound>> iter = soundMap.entrySet().iterator();
 			while (iter.hasNext()) {
 				Map.Entry<String, DownloadAndPlaySound> entry = iter.next();
-				if (entry.getValue().filename.equals(id_or_filename + ".ogg") == true) {
+				if (entry.getValue().getFilename().equals(id_or_filename + ".ogg") == true) {
 					entry.getValue().release();
 				}
 
@@ -64,11 +64,18 @@ public class DownloadAndPlaySoundExt implements IExtensionBase {
 
 	public String daps_audio_play_sound(String filename, double priority, double loop) {
 		String id = UUID.randomUUID().toString();
-		soundMap.put(id, new DownloadAndPlaySound("__GMS_PROJECT", "http://cwserver3.btncafe.com:8523/R/gamesound/" + filename + ".ogg", filename + ".ogg"));
+		if (filename.indexOf("bgm_") != -1) {
+			soundMap.put(id, new DownloadAndPlaySoundMediaPlayer("__GMS_PROJECT", "http://cwserver3.btncafe.com:8523/R/gamesound/" + filename + ".ogg", filename + ".ogg", loop == 1));
+		} else {
+			soundMap.put(id, new DownloadAndPlaySoundSoundPool("__GMS_PROJECT", "http://cwserver3.btncafe.com:8523/R/gamesound/" + filename + ".ogg", filename + ".ogg", loop == 1));
+		}
 		return id;
 	}
 
 	public double daps_audio_sound_pitch(String id, double pitch) {
+		if (soundMap.get(id) != null) {
+			soundMap.get(id).setPitch((float) pitch);
+		}
 		return -1;
 	}
 
@@ -88,7 +95,7 @@ public class DownloadAndPlaySoundExt implements IExtensionBase {
 			Iterator<Map.Entry<String, DownloadAndPlaySound>> iter = soundMap.entrySet().iterator();
 			while (iter.hasNext()) {
 				Map.Entry<String, DownloadAndPlaySound> entry = iter.next();
-				if (entry.getValue().filename.equals(id_or_filename + ".ogg") == true && entry.getValue().isPlaying() == true) {
+				if (entry.getValue().getFilename().equals(id_or_filename + ".ogg") == true && entry.getValue().isPlaying() == true) {
 					isPlaying = true;
 				}
 			}
@@ -98,6 +105,9 @@ public class DownloadAndPlaySoundExt implements IExtensionBase {
 	}
 
 	public double daps_audio_sound_gain(String id, double volume, double time) {
+		if (soundMap.get(id) != null) {
+			soundMap.get(id).setVolume((float) volume);
+		}
 		return -1;
 	}
 

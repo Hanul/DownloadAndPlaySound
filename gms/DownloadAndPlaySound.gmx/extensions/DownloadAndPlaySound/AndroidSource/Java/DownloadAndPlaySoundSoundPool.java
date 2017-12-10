@@ -1,4 +1,4 @@
-package co.hanul.downloadandplaysound;
+package ${YYAndroidPackageName};
 
 import android.media.AudioManager;
 import android.media.SoundPool;
@@ -21,11 +21,16 @@ public class DownloadAndPlaySoundSoundPool implements DownloadAndPlaySound {
     private boolean isLoop;
     private float volume = 1;
 
+    private String filename;
+
     private String folderPath;
     private String path;
 
     private int soundId;
     private boolean isReady;
+    private boolean isReleased;
+
+    private float pitch;
 
     public DownloadAndPlaySoundSoundPool(String tag, String url, String filename, boolean isLoop) {
 
@@ -34,17 +39,16 @@ public class DownloadAndPlaySoundSoundPool implements DownloadAndPlaySound {
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
+        this.filename = filename;
         this.isLoop = isLoop;
 
         folderPath = Environment.getExternalStorageDirectory() + "/" + tag + "/gamesound/";
         path = folderPath + filename;
 
-        // 이미 파일이 존재하면 즉시 준비 완료
         if (new File(path).exists() == true) {
             ready();
         }
 
-        // 아니면 다운로드 시작
         else {
             File folder = new File(folderPath);
             if (folder.exists() != true) {
@@ -54,11 +58,24 @@ public class DownloadAndPlaySoundSoundPool implements DownloadAndPlaySound {
         }
     }
 
+    public String getFilename() {
+        return filename;
+    }
+
+    public boolean isPlaying() {
+        return true;
+    }
+
     public void release() {
         if (isReady == true) {
             soundPool.stop(soundId);
             soundPool.unload(soundId);
         }
+        isReleased = true;
+    }
+
+    public boolean isReleased() {
+        return isReleased;
     }
 
     public void pause() {
@@ -69,6 +86,10 @@ public class DownloadAndPlaySoundSoundPool implements DownloadAndPlaySound {
         soundPool.autoResume();
     }
 
+    public void setPitch(float pitch) {
+        this.pitch = pitch;
+    }
+    
     public void setVolume(float volume) {
         this.volume = volume;
         if (isReady == true) {
@@ -84,7 +105,7 @@ public class DownloadAndPlaySoundSoundPool implements DownloadAndPlaySound {
         soundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
             @Override
             public void onLoadComplete(SoundPool soundPool, int i, int i1) {
-                soundPool.play(soundId, volume, volume, 0, isLoop == true ? -1 : 0, 1);
+                soundPool.play(soundId, volume, volume, 0, isLoop == true ? -1 : 0, pitch);
             }
         });
     }
@@ -108,14 +129,12 @@ public class DownloadAndPlaySoundSoundPool implements DownloadAndPlaySound {
                     byte data[] = new byte[4096];
                     int count;
                     while ((count = input.read(data)) != -1) {
-                        // Task가 중단되면 끝
                         if (isCancelled() == true) {
                             input.close();
                             return null;
                         }
                         output.write(data, 0, count);
                     }
-                    // 다운로드가 끝나면 준비 완료
                     ready();
                 }
             } catch (Exception e) {

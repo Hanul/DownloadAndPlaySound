@@ -1,6 +1,5 @@
 package co.hanul.downloadandplaysound;
 
-import android.content.Context;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Environment;
@@ -14,7 +13,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class DownloadAndPlaySoundMediaPlayer {
+public class DownloadAndPlaySoundMediaPlayer implements DownloadAndPlaySound {
 
     private URL url;
 
@@ -25,7 +24,7 @@ public class DownloadAndPlaySoundMediaPlayer {
     private MediaPlayer mediaPlayer = new MediaPlayer();
     private int currentPosition;
 
-    public DownloadAndPlaySoundMediaPlayer(String tag, String url, String filename) {
+    public DownloadAndPlaySoundMediaPlayer(String tag, String url, String filename, boolean isLoop) {
 
         try {
             this.url = new URL(url);
@@ -50,6 +49,7 @@ public class DownloadAndPlaySoundMediaPlayer {
             new DownloadTask().execute();
         }
 
+        mediaPlayer.setLooping(isLoop);
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
@@ -83,6 +83,10 @@ public class DownloadAndPlaySoundMediaPlayer {
             mediaPlayer.seekTo(currentPosition);
             mediaPlayer.start();
         }
+    }
+
+    public void setVolume(float volume) {
+        mediaPlayer.setVolume(volume, volume);
     }
 
     private void ready() {

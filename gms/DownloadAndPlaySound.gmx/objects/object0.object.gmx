@@ -29,6 +29,10 @@
 
 // 화면 계속 켜둠
 os_powersave_enable(false);
+
+
+var sound = daps_audio_play_sound("bgm_home", 1, true);
+//daps_audio_sound_gain(sound, 1, 0);
 </string>
           </argument>
         </arguments>
@@ -51,9 +55,11 @@ os_powersave_enable(false);
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>
-// filename이 bgm_으로 시작하면 mediaplayer로, 아니면 SoundPool로
-daps_audio_play_sound("bgm_home", 1, false);
+            <string>var sound = daps_audio_play_sound("sound_tack", 1, false);
+//daps_audio_sound_gain(sound, 1, 0);
+
+show_debug_message(daps_audio_is_playing("bgm_home"));
+daps_audio_stop_sound("bgm_home");
 </string>
           </argument>
         </arguments>

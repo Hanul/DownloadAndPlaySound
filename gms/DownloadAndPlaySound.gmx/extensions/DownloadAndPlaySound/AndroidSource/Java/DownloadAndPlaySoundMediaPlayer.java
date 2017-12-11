@@ -52,12 +52,15 @@ public class DownloadAndPlaySoundMediaPlayer implements DownloadAndPlaySound {
         }
 
         mediaPlayer.setLooping(isLoop);
-        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mediaPlayer) {
-                release();
-            }
-        });
+        
+        if (isLoop != true) {
+            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mediaPlayer) {
+                    release();
+                }
+            });
+        }
     }
 
     public String getFilename() {

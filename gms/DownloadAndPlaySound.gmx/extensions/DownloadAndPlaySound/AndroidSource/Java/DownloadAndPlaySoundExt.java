@@ -35,6 +35,16 @@ import android.view.MotionEvent;
 public class DownloadAndPlaySoundExt implements IExtensionBase {
 
 	private Map<String, DownloadAndPlaySound> soundMap = new HashMap<String, DownloadAndPlaySound>();
+	private Map<String, Double> volumeMap = new HashMap<String, Double>();
+
+	private String tag;
+	private String url;
+
+	public double daps_init(String tag, String url) {
+		this.tag = tag;
+		this.url = url;
+		return -1;
+	}
 
 	public double daps_audio_stop_sound(String id_or_filename) {
 		
@@ -54,7 +64,7 @@ public class DownloadAndPlaySoundExt implements IExtensionBase {
 				}
 
 				if (entry.getValue().isReleased() == true) {
-					soundMap.remove(entry.getKey());
+					iter.remove();
 				}
 			}
 		}
@@ -63,12 +73,22 @@ public class DownloadAndPlaySoundExt implements IExtensionBase {
 	}
 
 	public String daps_audio_play_sound(String filename, double priority, double loop) {
-		String id = UUID.randomUUID().toString();
+
+		DownloadAndPlaySound sound;
+
 		if (filename.indexOf("bgm_") != -1) {
-			soundMap.put(id, new DownloadAndPlaySoundMediaPlayer("__GMS_PROJECT", "http://cwserver3.btncafe.com:8523/R/gamesound/" + filename + ".ogg", filename + ".ogg", loop == 1));
+			sound = new DownloadAndPlaySoundMediaPlayer(tag, "http://" + url + "/R/gamesound/" + filename + ".ogg", filename + ".ogg", loop == 1);
 		} else {
-			soundMap.put(id, new DownloadAndPlaySoundSoundPool("__GMS_PROJECT", "http://cwserver3.btncafe.com:8523/R/gamesound/" + filename + ".ogg", filename + ".ogg", loop == 1));
+			sound = new DownloadAndPlaySoundSoundPool(tag, "http://" + url + "/R/gamesound/" + filename + ".ogg", filename + ".ogg", loop == 1);
 		}
+
+		String id = UUID.randomUUID().toString();
+		soundMap.put(id, sound);
+
+		if (volumeMap.get(filename) != null) {
+			sound.setVolume(volumeMap.get(filename).floatValue());
+		}
+
 		return id;
 	}
 
@@ -104,10 +124,27 @@ public class DownloadAndPlaySoundExt implements IExtensionBase {
 		return isPlaying == true ? 1 : 0;
 	}
 
-	public double daps_audio_sound_gain(String id, double volume, double time) {
-		if (soundMap.get(id) != null) {
-			soundMap.get(id).setVolume((float) volume);
+	public double daps_audio_sound_gain(String id_or_filename, double volume, double time) {
+
+		volumeMap.put(id_or_filename, volume);
+		
+		// id
+		if (soundMap.get(id_or_filename) != null) {
+			soundMap.get(id_or_filename).setVolume((float) volume);
 		}
+
+		// filename
+		else {
+
+			Iterator<Map.Entry<String, DownloadAndPlaySound>> iter = soundMap.entrySet().iterator();
+			while (iter.hasNext()) {
+				Map.Entry<String, DownloadAndPlaySound> entry = iter.next();
+				if (entry.getValue().getFilename().equals(id_or_filename + ".ogg") == true) {
+					entry.getValue().setVolume((float) volume);
+				}
+			}
+		}
+
 		return -1;
 	}
 
@@ -125,7 +162,7 @@ public class DownloadAndPlaySoundExt implements IExtensionBase {
 		while (iter.hasNext()) {
 			Map.Entry<String, DownloadAndPlaySound> entry = iter.next();
 			if (entry.getValue().isReleased() == true) {
-				soundMap.remove(entry.getKey());
+				iter.remove();
 			} else {
 				entry.getValue().pause();
 			}
@@ -137,7 +174,7 @@ public class DownloadAndPlaySoundExt implements IExtensionBase {
 		while (iter.hasNext()) {
 			Map.Entry<String, DownloadAndPlaySound> entry = iter.next();
 			if (entry.getValue().isReleased() == true) {
-				soundMap.remove(entry.getKey());
+				iter.remove();
 			} else {
 				entry.getValue().resume();
 			}

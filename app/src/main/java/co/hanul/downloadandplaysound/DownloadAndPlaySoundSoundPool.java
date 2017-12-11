@@ -13,9 +13,13 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DownloadAndPlaySoundSoundPool implements DownloadAndPlaySound {
-    static private SoundPool soundPool = new SoundPool(5, AudioManager.STREAM_MUSIC, 0);
+
+    static private SoundPool soundPool = new SoundPool(32, AudioManager.STREAM_MUSIC, 0);
+    static private Map<String, int> soundMap = new HashMap<String, int>();
 
     private URL url;
     private boolean isLoop;
@@ -25,6 +29,7 @@ public class DownloadAndPlaySoundSoundPool implements DownloadAndPlaySound {
     private String path;
 
     private int soundId;
+    private int streamId;
     private boolean isReady;
 
     public DownloadAndPlaySoundSoundPool(String tag, String url, String filename, boolean isLoop) {
@@ -56,37 +61,52 @@ public class DownloadAndPlaySoundSoundPool implements DownloadAndPlaySound {
 
     public void release() {
         if (isReady == true) {
-            soundPool.stop(soundId);
-            soundPool.unload(soundId);
+            soundPool.stop(streamId);
         }
     }
 
     public void pause() {
-        soundPool.autoPause();
+        if (isReleased != true) {
+            soundPool.pause(streamId);
+        }
     }
 
     public void resume() {
-        soundPool.autoResume();
+        if (isReleased != true) {
+            soundPool.resume(streamId);
+        }
     }
 
     public void setVolume(float volume) {
         this.volume = volume;
         if (isReady == true) {
-            soundPool.setVolume(soundId, volume, volume);
+            soundPool.setVolume(streamId, volume, volume);
         }
     }
 
     private void ready() {
         isReady = true;
 
-        soundId = soundPool.load(path, 1);
+        // 메모리를 아끼기 위해 로드하고 캐싱해 둠
+        if (soundMap.get(path) == null) {
 
-        soundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
-            @Override
-            public void onLoadComplete(SoundPool soundPool, int i, int i1) {
-                soundPool.play(soundId, volume, volume, 0, isLoop == true ? -1 : 0, 1);
-            }
-        });
+            soundId = soundPool.load(path, 1);
+            soundMap.put(path, soundId);
+
+            soundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
+                @Override
+                public void onLoadComplete(SoundPool soundPool, int i, int i1) {
+                    if (isReleased != true) {
+                        streamId = soundPool.play(soundId, volume, volume, 0, isLoop == true ? -1 : 0, 1);
+                    }
+                }
+            });
+        }
+
+        else {
+            soundId = soundMap.get(path);
+            streamId = soundPool.play(soundId, volume, volume, 0, isLoop == true ? -1 : 0, 1);
+        }
     }
 
     private class DownloadTask extends AsyncTask<String, Integer, String> {

@@ -11,7 +11,7 @@
   <androidProps>-1</androidProps>
   <iosProps>-1</iosProps>
   <installdir></installdir>
-  <classname>DownloadAndPlaySoundExt</classname>
+  <classname>DownloadAndPlaySound</classname>
   <androidclassname>DownloadAndPlaySoundExt</androidclassname>
   <sourcedir></sourcedir>
   <androidsourcedir></androidsourcedir>

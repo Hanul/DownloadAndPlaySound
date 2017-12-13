@@ -4,8 +4,8 @@
 
 - (id) init
 {
-    tag = (char *)[@"" UTF8String];
-    url = (char *)[@"" UTF8String];
+    tag = @"";
+    url = @"";
     
     soundMap = [[NSMutableDictionary alloc] init];
     soundFilenameMap = [[NSMutableDictionary alloc] init];
@@ -16,8 +16,8 @@
 
 - (double) daps_init:(char *)tag Arg2:(char *)url
 {
-    self->tag = tag;
-    self->url = url;
+    self->tag = [[NSString stringWithUTF8String:tag] copy];
+    self->url = [[NSString stringWithUTF8String:url] copy];
     return (double)-1;
 }
 
@@ -47,35 +47,41 @@
 
 - (char *) daps_audio_play_sound:(char *)filename Arg2:(double)priority Arg3:(double)loop
 {
-    self->tag = (char *)[@"__TEST" UTF8String];
-    self->url = (char *)[@"cwserver3.btncafe.com:8523" UTF8String];
-    
     NSArray * paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString * documentsDirectory = [paths objectAtIndex:0];
-    NSString * filePath = [NSString stringWithFormat:@"%@/%@/%@.mp3", documentsDirectory, [NSString stringWithUTF8String:tag], [NSString stringWithUTF8String:filename]];
+    NSString * folderPath = [NSString stringWithFormat:@"%@/%@", documentsDirectory, tag];
+    NSString * filePath = [NSString stringWithFormat:@"%@/%@", folderPath, [NSString stringWithUTF8String:filename]];
     NSFileManager * fileManager = [NSFileManager defaultManager];
     
+    // 폴더가 없으면 생성
+    if ([fileManager fileExistsAtPath:folderPath] != YES) {
+        [fileManager createDirectoryAtPath:folderPath withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    
     // 파일이 존재하지 않으면 다운로드
-    if ([fileManager fileExistsAtPath:filePath] != YES){
-        NSData * data = [NSData dataWithContentsOfURL:[NSURL URLWithString:[NSString stringWithFormat:@"http://%@/R/gamesound/mp3/%@.mp3", [NSString stringWithUTF8String:url], [NSString stringWithUTF8String:filename]]]];
+    if ([fileManager fileExistsAtPath:filePath] != YES) {
+        NSData * data = [NSData dataWithContentsOfURL:[NSURL URLWithString:[NSString stringWithFormat:@"http://%@/R/gamesound/mp3/%@.mp3", url, [NSString stringWithUTF8String:filename]]]];
         [data writeToFile:filePath atomically:YES];
     }
+    
+    NSString * id = [[NSUUID UUID] UUIDString];
     
     NSURL * fileURL = [NSURL fileURLWithPath:filePath];
     AVAudioPlayer * player = [[AVAudioPlayer alloc] initWithContentsOfURL:fileURL error:nil];
     player.numberOfLoops = loop == 1 ? -1 : 0;
     player.delegate = self;
-    [player play];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT,0), ^{
+        if (soundMap[id] != nil) {
+            [player play];
+        }
+    });
     
-    NSString * id = [[NSUUID UUID] UUIDString];
     soundMap[id] = player;
     soundFilenameMap[id] = [NSString stringWithUTF8String:filename];
     
     if (volumeMap[[NSString stringWithUTF8String:filename]] != nil) {
         [player setVolume:[volumeMap[[NSString stringWithUTF8String:filename]] floatValue]];
     }
-    
-    [self daps_audio_sound_pitch:(char *)[id UTF8String] Arg2:0.5];
     
     return (char *)[id UTF8String];
 }

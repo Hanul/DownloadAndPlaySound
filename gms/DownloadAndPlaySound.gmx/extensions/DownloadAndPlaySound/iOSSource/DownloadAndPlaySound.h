@@ -2,8 +2,8 @@
 
 @interface DownloadAndPlaySound : NSObject<AVAudioPlayerDelegate>
 {
-    char * tag;
-    char * url;
+    NSString * tag;
+    NSString * url;
     
     NSMutableDictionary * soundMap;
     NSMutableDictionary * soundFilenameMap;

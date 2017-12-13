@@ -11,6 +11,9 @@
     soundFilenameMap = [[NSMutableDictionary alloc] init];
     volumeMap = [[NSMutableDictionary alloc] init];
     
+    // 음악 앱과 동시 재생되도록
+    [[AVAudioSession sharedInstance] setCategory: AVAudioSessionCategoryAmbient error: nil];
+    
     return self;
 }
 

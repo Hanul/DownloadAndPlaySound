@@ -32,6 +32,10 @@ import android.view.MenuItem;
 import android.app.Dialog;
 import android.view.MotionEvent;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.support.v4.app.ActivityCompat;
+
 public class DownloadAndPlaySoundExt implements IExtensionBase {
 
 	private Map<String, DownloadAndPlaySound> soundMap = new HashMap<String, DownloadAndPlaySound>();
@@ -43,6 +47,13 @@ public class DownloadAndPlaySoundExt implements IExtensionBase {
 	public double daps_init(String tag, String url) {
 		this.tag = tag;
 		this.url = url;
+
+		if (RunnerActivity.CurrentActivity.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+			ActivityCompat.requestPermissions(RunnerActivity.CurrentActivity, new String[]{
+				Manifest.permission.WRITE_EXTERNAL_STORAGE
+			}, 1);
+		}
+
 		return -1;
 	}
 
@@ -59,7 +70,7 @@ public class DownloadAndPlaySoundExt implements IExtensionBase {
 			Iterator<Map.Entry<String, DownloadAndPlaySound>> iter = soundMap.entrySet().iterator();
 			while (iter.hasNext()) {
 				Map.Entry<String, DownloadAndPlaySound> entry = iter.next();
-				if (entry.getValue().getFilename().equals(id_or_filename + ".ogg") == true) {
+				if (entry.getValue().getFilename().equals(id_or_filename) == true) {
 					entry.getValue().release();
 				}
 
@@ -77,9 +88,9 @@ public class DownloadAndPlaySoundExt implements IExtensionBase {
 		DownloadAndPlaySound sound;
 
 		if (filename.indexOf("bgm_") != -1) {
-			sound = new DownloadAndPlaySoundMediaPlayer(tag, "http://" + url + "/R/gamesound/" + filename + ".ogg", filename + ".ogg", loop == 1);
+			sound = new DownloadAndPlaySoundMediaPlayer(tag, "http://" + url + "/R/gamesound/ogg/" + filename + ".ogg", filename, loop == 1);
 		} else {
-			sound = new DownloadAndPlaySoundSoundPool(tag, "http://" + url + "/R/gamesound/" + filename + ".ogg", filename + ".ogg", loop == 1);
+			sound = new DownloadAndPlaySoundSoundPool(tag, "http://" + url + "/R/gamesound/ogg/" + filename + ".ogg", filename, loop == 1);
 		}
 
 		String id = UUID.randomUUID().toString();
@@ -115,7 +126,7 @@ public class DownloadAndPlaySoundExt implements IExtensionBase {
 			Iterator<Map.Entry<String, DownloadAndPlaySound>> iter = soundMap.entrySet().iterator();
 			while (iter.hasNext()) {
 				Map.Entry<String, DownloadAndPlaySound> entry = iter.next();
-				if (entry.getValue().getFilename().equals(id_or_filename + ".ogg") == true && entry.getValue().isPlaying() == true) {
+				if (entry.getValue().getFilename().equals(id_or_filename) == true && entry.getValue().isPlaying() == true) {
 					isPlaying = true;
 				}
 			}
@@ -139,7 +150,7 @@ public class DownloadAndPlaySoundExt implements IExtensionBase {
 			Iterator<Map.Entry<String, DownloadAndPlaySound>> iter = soundMap.entrySet().iterator();
 			while (iter.hasNext()) {
 				Map.Entry<String, DownloadAndPlaySound> entry = iter.next();
-				if (entry.getValue().getFilename().equals(id_or_filename + ".ogg") == true) {
+				if (entry.getValue().getFilename().equals(id_or_filename) == true) {
 					entry.getValue().setVolume((float) volume);
 				}
 			}

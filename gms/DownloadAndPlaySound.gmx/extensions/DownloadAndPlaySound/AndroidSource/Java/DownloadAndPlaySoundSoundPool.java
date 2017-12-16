@@ -23,7 +23,7 @@ public class DownloadAndPlaySoundSoundPool implements DownloadAndPlaySound {
 
     private URL url;
     private boolean isLoop;
-    private float volume = 1;
+    private float volume = 0;
 
     private String filename;
 
@@ -117,18 +117,35 @@ public class DownloadAndPlaySoundSoundPool implements DownloadAndPlaySound {
             soundMap.put(path, soundId);
 
             soundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
+
                 @Override
-                public void onLoadComplete(SoundPool soundPool, int i, int i1) {
-                    if (isReleased != true) {
-                        streamId = soundPool.play(soundId, volume, volume, 0, isLoop == true ? -1 : 0, pitch);
-                    }
+                public void onLoadComplete(SoundPool _soundPool, int i, int i1) {
+
+                	new Thread(new Runnable() {
+
+						@Override
+						public void run() {
+		                    if (isReleased != true) {
+		                        streamId = soundPool.play(soundId, volume, volume, 0, isLoop == true ? -1 : 0, pitch);
+		                    }
+						}
+					}).start();
                 }
             });
         }
 
         else {
             soundId = soundMap.get(path);
-            streamId = soundPool.play(soundId, volume, volume, 0, isLoop == true ? -1 : 0, pitch);
+
+        	new Thread(new Runnable() {
+
+				@Override
+				public void run() {
+                    if (isReleased != true) {
+                        streamId = soundPool.play(soundId, volume, volume, 0, isLoop == true ? -1 : 0, pitch);
+                    }
+				}
+			}).start();
         }
     }
 

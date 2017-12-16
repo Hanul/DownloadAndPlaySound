@@ -1,6 +1,6 @@
 #import <AVFoundation/AVFoundation.h>
 
-@interface DownloadAndPlaySound : NSObject<AVAudioPlayerDelegate>
+@interface DownloadAndPlaySound : NSObject
 {
     NSString * tag;
     NSString * url;

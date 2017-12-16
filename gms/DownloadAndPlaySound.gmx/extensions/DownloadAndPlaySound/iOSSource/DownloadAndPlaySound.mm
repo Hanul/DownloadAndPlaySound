@@ -27,20 +27,27 @@
 {
     if (soundMap[[NSString stringWithUTF8String:id_or_filename]] != nil) {
         [soundMap[[NSString stringWithUTF8String:id_or_filename]] stop];
-        [soundMap[[NSString stringWithUTF8String:id_or_filename]] release];
+        // release가 자동으로 됨
         [soundMap removeObjectForKey:[NSString stringWithUTF8String:id_or_filename]];
     }
-    
+
     return (double)-1;
 }
 
 - (char *) daps_audio_play_sound:(char *)filename Arg2:(double)priority Arg3:(double)loop
 {
-    if (soundMap[[NSString stringWithUTF8String:filename]] != nil) {
-        AVAudioPlayer * player = soundMap[[NSString stringWithUTF8String:filename]];
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-            [player play];
+    NSString * id = [NSString stringWithUTF8String:filename];
+    
+    // 이미 존재하는 사운드면 재생
+    if (soundMap[id] != nil) {
+        dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0);
+        dispatch_async(queue, ^{
+            AVAudioPlayer * player = soundMap[id];
+            if (player != nil && [player isPlaying] == NO) {
+                [player play];
+            }
         });
+        dispatch_release(queue);
     }
     
     else {
@@ -62,18 +69,26 @@
             [data writeToFile:filePath atomically:YES];
         }
         
+        // 플레이어 생성
         NSURL * fileURL = [NSURL fileURLWithPath:filePath];
         AVAudioPlayer * player = [[AVAudioPlayer alloc] initWithContentsOfURL:fileURL error:nil];
-        player.numberOfLoops = loop == 1 ? -1 : 0;
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-            [player play];
-        });
-        
-        soundMap[[NSString stringWithUTF8String:filename]] = player;
-        
-        if (volumeMap[[NSString stringWithUTF8String:filename]] != nil) {
-            [player setVolume:[volumeMap[[NSString stringWithUTF8String:filename]] floatValue]];
+        if (volumeMap[id] != nil) {
+            [player setVolume:[volumeMap[id] floatValue]];
         }
+        if (loop == 1) {
+            player.numberOfLoops = -1;
+        }
+        soundMap[id] = player;
+        
+        // 사운드 재생
+        dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0);
+        dispatch_async(queue, ^{
+            AVAudioPlayer * player = soundMap[id];
+            if (player != nil && [player isPlaying] == NO) {
+                [player play];
+            }
+        });
+        dispatch_release(queue);
     }
     
     return filename;
@@ -91,7 +106,11 @@
 
 - (double) daps_audio_sound_gain:(char *)id_or_filename Arg2:(double)volume Arg3:(double)time
 {
-    volumeMap[[NSString stringWithUTF8String:id_or_filename]] = [NSNumber numberWithDouble:volume];
+    if (volumeMap[[NSString stringWithUTF8String:id_or_filename]] != nil) {
+        // release가 자동으로 됨
+        [volumeMap removeObjectForKey:[NSString stringWithUTF8String:id_or_filename]];
+    }
+    volumeMap[[NSString stringWithUTF8String:id_or_filename]] = [[NSNumber numberWithDouble:volume] copy];
     
     if (soundMap[[NSString stringWithUTF8String:id_or_filename]] != nil) {
         [soundMap[[NSString stringWithUTF8String:id_or_filename]] setVolume:(float) volume];

@@ -6,7 +6,6 @@
     NSString * url;
     
     NSMutableDictionary * soundMap;
-    NSMutableDictionary * soundFilenameMap;
     NSMutableDictionary * volumeMap;
 }
 

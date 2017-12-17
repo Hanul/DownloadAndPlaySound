@@ -1,11 +1,12 @@
 #import <AVFoundation/AVFoundation.h>
 
-@interface DownloadAndPlaySound : NSObject
+@interface DownloadAndPlaySound : NSObject<AVAudioPlayerDelegate>
 {
     NSString * tag;
     NSString * url;
     
-    NSMutableDictionary * soundMap;
+    NSMutableDictionary * audioMap;
+    NSMutableDictionary * audioFilenameMap;
     NSMutableDictionary * volumeMap;
 }
 

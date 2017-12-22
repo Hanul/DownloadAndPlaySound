@@ -33,6 +33,7 @@ import android.app.Dialog;
 import android.view.MotionEvent;
 
 import android.Manifest;
+import android.os.Build;
 import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
 
@@ -48,13 +49,14 @@ public class DownloadAndPlaySoundExt implements IExtensionBase {
 		this.tag = tag;
 		this.url = url;
 
-		if (RunnerActivity.CurrentActivity.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+		if (Build.VERSION.SDK_INT >= 23 && RunnerActivity.CurrentActivity.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 			ActivityCompat.requestPermissions(RunnerActivity.CurrentActivity, new String[]{
 				Manifest.permission.WRITE_EXTERNAL_STORAGE
 			}, 1);
+			return 0;
 		}
 
-		return -1;
+		return 1;
 	}
 
 	public double daps_audio_stop_sound(String id_or_filename) {
@@ -185,7 +187,8 @@ public class DownloadAndPlaySoundExt implements IExtensionBase {
 		while (iter.hasNext()) {
 			Map.Entry<String, DownloadAndPlaySound> entry = iter.next();
 			if (entry.getValue().isReleased() == true) {
-				iter.remove();
+				// 오류 발생으로 인해 삭제
+				//iter.remove();
 			} else {
 				entry.getValue().resume();
 			}

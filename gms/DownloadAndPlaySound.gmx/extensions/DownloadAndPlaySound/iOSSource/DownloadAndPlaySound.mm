@@ -22,7 +22,7 @@
     self->tag = [[NSString stringWithUTF8String:tag] copy];
     self->url = [[NSString stringWithUTF8String:url] copy];
     
-    return (double)-1;
+    return (double)1;
 }
 
 - (double) daps_audio_stop_sound:(char *)id_or_filename

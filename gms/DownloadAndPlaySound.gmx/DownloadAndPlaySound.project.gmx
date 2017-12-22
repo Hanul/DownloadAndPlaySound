@@ -15,6 +15,7 @@
   </sprites>
   <backgrounds name="background"/>
   <paths name="paths"/>
+  <shaders name="shaders"/>
   <objects name="objects">
     <object>objects\object0</object>
   </objects>

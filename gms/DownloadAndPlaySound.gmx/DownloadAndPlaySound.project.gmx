@@ -6,18 +6,25 @@
   <NewExtensions>
     <extension index="0">extensions\DownloadAndPlaySound</extension>
   </NewExtensions>
-  <sounds name="sound">
-    <sound>sound\bgm_home</sound>
-    <sound>sound\sound_tack</sound>
-  </sounds>
+  <sounds name="sound"/>
   <sprites name="sprites">
     <sprite>sprites\sprite0</sprite>
   </sprites>
   <backgrounds name="background"/>
   <paths name="paths"/>
-  <shaders name="shaders"/>
+  <scripts name="scripts">
+    <scripts name="DownloadAndPlaySound">
+      <script>scripts\daps_init.gml</script>
+      <script>scripts\daps_audio_play_sound.gml</script>
+      <script>scripts\daps_audio_stop_sound.gml</script>
+      <script>scripts\daps_audio_sound_pitch.gml</script>
+      <script>scripts\daps_audio_is_playing.gml</script>
+      <script>scripts\daps_audio_sound_gain.gml</script>
+    </scripts>
+  </scripts>
   <objects name="objects">
     <object>objects\object0</object>
+    <object>objects\download_and_play_sound_object</object>
   </objects>
   <rooms name="rooms">
     <room>rooms\room0</room>

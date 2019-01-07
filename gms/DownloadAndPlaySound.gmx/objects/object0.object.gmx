@@ -30,9 +30,9 @@
 // 화면 계속 켜둠
 os_powersave_enable(false);
 
+daps_init("__test", "https://raw.githubusercontent.com/Hanul/DownloadAndPlaySound/master/");
 
 var sound = daps_audio_play_sound("bgm_home", 1, true);
-//daps_audio_sound_gain(sound, 1, 0);
 </string>
           </argument>
         </arguments>
@@ -56,9 +56,9 @@ var sound = daps_audio_play_sound("bgm_home", 1, true);
           <argument>
             <kind>1</kind>
             <string>var sound = daps_audio_play_sound("sound_tack", 1, false);
-//daps_audio_sound_gain(sound, 1, 0);
 
 show_debug_message(daps_audio_is_playing("bgm_home"));
+
 daps_audio_stop_sound("bgm_home");
 </string>
           </argument>

@@ -2,6 +2,10 @@
 
 @implementation DownloadAndPlaySound
 
+const int EVENT_OTHER_SOCIAL = 70;
+extern int CreateDsMap( int _num, ... );
+extern void CreateAsynEventWithDSMap(int dsmapindex, int event_index);
+
 - (id) init
 {
     // 음악 앱과 동시 재생되도록
@@ -11,13 +15,12 @@
     url = @"";
     
     audioMap = [[NSMutableDictionary alloc] init];
-    audioFilenameMap = [[NSMutableDictionary alloc] init];
     volumeMap = [[NSMutableDictionary alloc] init];
     
     return self;
 }
 
-- (double) daps_init:(char *)tag Arg2:(char *)url
+- (double) native_daps_init:(char *)tag Arg2:(char *)url
 {
     self->tag = [[NSString stringWithUTF8String:tag] copy];
     self->url = [[NSString stringWithUTF8String:url] copy];
@@ -25,41 +28,16 @@
     return (double)1;
 }
 
-- (double) daps_audio_stop_sound:(char *)id_or_filename
+- (char *) native_daps_create_uuid
 {
-    // id
-    if (audioMap[[NSString stringWithUTF8String:id_or_filename]] != nil) {
-        [audioMap[[NSString stringWithUTF8String:id_or_filename]] stop];
-        // release가 자동으로 됨
-        [audioMap removeObjectForKey:[NSString stringWithUTF8String:id_or_filename]];
-        [audioFilenameMap removeObjectForKey:[NSString stringWithUTF8String:id_or_filename]];
-    }
-    
-    // filename
-    else {
-        for (NSString * id in [audioMap allKeys]) {
-            if ([audioFilenameMap[id] isEqualToString:[NSString stringWithUTF8String:id_or_filename]]) {
-                [audioMap[id] stop];
-                // release가 자동으로 됨
-                [audioMap removeObjectForKey:id];
-                [audioFilenameMap removeObjectForKey:id];
-            }
-        }
-    }
-
-    return (double)-1;
+    return (char *)[[[NSUUID UUID] UUIDString] UTF8String];
 }
 
-- (char *) daps_audio_play_sound:(char *)filename Arg2:(double)priority Arg3:(double)loop
+- (double) native_daps_ready_audio:(char *)filename
 {
-    NSString * id = [[NSUUID UUID] UUIDString];
-    
-    NSString * filenameStr = [NSString stringWithUTF8String:filename];
-    
     NSString * folderPath = [NSString stringWithFormat:@"%@/%@", [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0], tag];
     NSString * filePath = [NSString stringWithFormat:@"%@/%@", folderPath, [NSString stringWithUTF8String:filename]];
-    NSURL * fileURL = [NSURL fileURLWithPath:filePath];
-    
+
     NSFileManager * fileManager = [NSFileManager defaultManager];
     
     // 폴더가 없으면 생성
@@ -69,12 +47,30 @@
     
     // 파일이 존재하지 않으면 다운로드
     if ([fileManager fileExistsAtPath:filePath] != YES) {
-        NSData * data = [NSData dataWithContentsOfURL:[NSURL URLWithString:[NSString stringWithFormat:@"http://%@/R/gamesound/mp3/%@.mp3", url, [NSString stringWithUTF8String:filename]]]];
+        NSData * data = [NSData dataWithContentsOfURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@mp3/%@.mp3", url, [NSString stringWithUTF8String:filename]]]];
         [data writeToFile:filePath atomically:YES];
     }
     
+    int dsMapIndex = CreateDsMap(2,
+                                 "type", 0.0, "__SOUND_READY",
+                                 "filename", 0.0, filename
+                                 );
+    
+    CreateAsynEventWithDSMap(dsMapIndex, EVENT_OTHER_SOCIAL);
+    
+    return (double)-1;
+}
+
+- (char *) native_daps_audio_play_sound:(char *)filename Arg2:(double)loop
+{
+    NSString * id = [[NSUUID UUID] UUIDString];
+    
+    NSString * folderPath = [NSString stringWithFormat:@"%@/%@", [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0], tag];
+    NSString * filePath = [NSString stringWithFormat:@"%@/%@", folderPath, [NSString stringWithUTF8String:filename]];
+    NSURL * fileURL = [NSURL fileURLWithPath:filePath];
+    
     // 배경 음악
-    if ([[filenameStr substringToIndex:4] isEqualToString:@"bgm_"]) {
+    if ([[[NSString stringWithUTF8String:filename] substringToIndex:4] isEqualToString:@"bgm_"]) {
         
         // 플레이어 생성
         AVAudioPlayer * player = [[AVAudioPlayer alloc] initWithContentsOfURL:fileURL error:nil];
@@ -88,7 +84,6 @@
         }
         
         audioMap[id] = player;
-        audioFilenameMap[id] = filenameStr;
     }
     
     // 효과음
@@ -105,54 +100,45 @@
     return (char *)[id UTF8String];
 }
 
-- (double) daps_audio_sound_pitch:(char *)id Arg2:(double)pitch
+- (double) native_daps_audio_stop_sound:(char *)id
+{
+    if (audioMap[[NSString stringWithUTF8String:id]] != nil) {
+        [audioMap[[NSString stringWithUTF8String:id]] stop];
+        // release가 자동으로 됨
+        [audioMap removeObjectForKey:[NSString stringWithUTF8String:id]];
+    }
+    
+    return (double)-1;
+}
+
+- (double) native_daps_audio_sound_pitch:(char *)id Arg2:(double)pitch
 {
     return (double)-1;
 }
 
-- (double) daps_audio_is_playing:(char *)id_or_filename
+- (double) native_daps_audio_is_playing:(char *)id
 {
     bool isPlaying = NO;
     
-    // id
-    if (audioMap[[NSString stringWithUTF8String:id_or_filename]] != nil) {
-        if ([audioMap[[NSString stringWithUTF8String:id_or_filename]] isPlaying] == YES) {
+    if (audioMap[[NSString stringWithUTF8String:id]] != nil) {
+        if ([audioMap[[NSString stringWithUTF8String:id]] isPlaying] == YES) {
             isPlaying = YES;
-        }
-    }
-    
-    // filename
-    else {
-        for (NSString * id in [audioMap allKeys]) {
-            if ([audioFilenameMap[id] isEqualToString:[NSString stringWithUTF8String:id_or_filename]] && [audioMap[id] isPlaying] == YES) {
-                isPlaying = YES;
-            }
         }
     }
     
     return isPlaying;
 }
 
-- (double) daps_audio_sound_gain:(char *)id_or_filename Arg2:(double)volume Arg3:(double)time
+- (double) native_daps_audio_sound_gain:(char *)id Arg2:(double)volume
 {
-    if (volumeMap[[NSString stringWithUTF8String:id_or_filename]] != nil) {
+    if (volumeMap[[NSString stringWithUTF8String:id]] != nil) {
         // release가 자동으로 됨
-        [volumeMap removeObjectForKey:[NSString stringWithUTF8String:id_or_filename]];
+        [volumeMap removeObjectForKey:[NSString stringWithUTF8String:id]];
     }
-    volumeMap[[NSString stringWithUTF8String:id_or_filename]] = [NSNumber numberWithDouble:volume];
+    volumeMap[[NSString stringWithUTF8String:id]] = [NSNumber numberWithDouble:volume];
     
-    // id
-    if (audioMap[[NSString stringWithUTF8String:id_or_filename]] != nil) {
-        [audioMap[[NSString stringWithUTF8String:id_or_filename]] setVolume:(float) volume];
-    }
-    
-    // filename
-    else {
-        for (NSString * id in [audioMap allKeys]) {
-            if ([audioFilenameMap[id] isEqualToString:[NSString stringWithUTF8String:id_or_filename]]) {
-                [audioMap[id] setVolume:(float) volume];
-            }
-        }
+    if (audioMap[[NSString stringWithUTF8String:id]] != nil) {
+        [audioMap[[NSString stringWithUTF8String:id]] setVolume:(float) volume];
     }
     
     return (double)-1;
@@ -166,7 +152,6 @@
         [audioMap[id] stop];
         // release가 자동으로 됨
         [audioMap removeObjectForKey:id];
-        [audioFilenameMap removeObjectForKey:id];
     }
 }
 

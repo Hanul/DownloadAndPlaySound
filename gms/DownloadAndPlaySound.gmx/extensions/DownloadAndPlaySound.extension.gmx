@@ -8,11 +8,9 @@
   <license>Free to use, also for commercial games.</license>
   <description></description>
   <helpfile></helpfile>
-  <androidProps>-1</androidProps>
-  <iosProps>-1</iosProps>
   <installdir></installdir>
   <classname>DownloadAndPlaySound</classname>
-  <androidclassname>DownloadAndPlaySoundExt</androidclassname>
+  <androidclassname>DownloadAndPlaySound</androidclassname>
   <sourcedir></sourcedir>
   <androidsourcedir></androidsourcedir>
   <macsourcedir></macsourcedir>
@@ -25,12 +23,25 @@
   <gradleinject></gradleinject>
   <iosSystemFrameworks/>
   <iosThirdPartyFrameworks/>
+  <ConfigOptions>
+    <Config name="Default">
+      <CopyToMask>105554163798254</CopyToMask>
+    </Config>
+  </ConfigOptions>
   <androidPermissions>
     <Permission>android.permission.WRITE_EXTERNAL_STORAGE</Permission>
     <Permission>android.permission.READ_EXTERNAL_STORAGE</Permission>
     <Permission>android.permission.INTERNET</Permission>
   </androidPermissions>
-  <IncludedResources/>
+  <IncludedResources>
+    <Resource>Scripts\DownloadAndPlaySound\daps_init</Resource>
+    <Resource>Scripts\DownloadAndPlaySound\daps_audio_play_sound</Resource>
+    <Resource>Scripts\DownloadAndPlaySound\daps_audio_stop_sound</Resource>
+    <Resource>Scripts\DownloadAndPlaySound\daps_audio_sound_pitch</Resource>
+    <Resource>Scripts\DownloadAndPlaySound\daps_audio_is_playing</Resource>
+    <Resource>Scripts\DownloadAndPlaySound\daps_audio_sound_gain</Resource>
+    <Resource>Objects\download_and_play_sound_object</Resource>
+  </IncludedResources>
   <files>
     <file>
       <filename>DownloadAndPlaySound.ext</filename>
@@ -47,34 +58,33 @@
       <ProxyFiles/>
       <functions>
         <function>
-          <name>daps_audio_stop_sound</name>
-          <externalName>daps_audio_stop_sound</externalName>
+          <name>native_daps_audio_stop_sound</name>
+          <externalName>native_daps_audio_stop_sound</externalName>
           <kind>11</kind>
-          <help>daps_audio_stop_sound(id_or_filename)</help>
-          <returnType>2</returnType>
+          <help>native_daps_audio_stop_sound(id_or_filename)</help>
+          <returnType>0</returnType>
           <argCount>1</argCount>
           <args>
             <arg>1</arg>
           </args>
         </function>
         <function>
-          <name>daps_audio_play_sound</name>
-          <externalName>daps_audio_play_sound</externalName>
+          <name>native_daps_audio_play_sound</name>
+          <externalName>native_daps_audio_play_sound</externalName>
           <kind>11</kind>
-          <help>daps_audio_play_sound(filename, priority, loop)</help>
+          <help>native_daps_audio_play_sound(filename, loop)</help>
           <returnType>1</returnType>
-          <argCount>3</argCount>
+          <argCount>2</argCount>
           <args>
             <arg>1</arg>
-            <arg>2</arg>
             <arg>2</arg>
           </args>
         </function>
         <function>
-          <name>daps_audio_sound_pitch</name>
-          <externalName>daps_audio_sound_pitch</externalName>
+          <name>native_daps_audio_sound_pitch</name>
+          <externalName>native_daps_audio_sound_pitch</externalName>
           <kind>11</kind>
-          <help>daps_audio_sound_pitch(id, pitch)</help>
+          <help>native_daps_audio_sound_pitch(id, pitch)</help>
           <returnType>2</returnType>
           <argCount>2</argCount>
           <args>
@@ -83,10 +93,10 @@
           </args>
         </function>
         <function>
-          <name>daps_audio_is_playing</name>
-          <externalName>daps_audio_is_playing</externalName>
+          <name>native_daps_audio_is_playing</name>
+          <externalName>native_daps_audio_is_playing</externalName>
           <kind>11</kind>
-          <help>daps_audio_is_playing(id_or_filename)</help>
+          <help>native_daps_audio_is_playing(id_or_filename)</help>
           <returnType>2</returnType>
           <argCount>1</argCount>
           <args>
@@ -94,29 +104,48 @@
           </args>
         </function>
         <function>
-          <name>daps_audio_sound_gain</name>
-          <externalName>daps_audio_sound_gain</externalName>
+          <name>native_daps_audio_sound_gain</name>
+          <externalName>native_daps_audio_sound_gain</externalName>
           <kind>11</kind>
-          <help>daps_audio_sound_gain(id_or_filename, volume, time)</help>
+          <help>native_daps_audio_sound_gain(id_or_filename, volume)</help>
           <returnType>2</returnType>
-          <argCount>3</argCount>
+          <argCount>2</argCount>
           <args>
             <arg>1</arg>
-            <arg>2</arg>
             <arg>2</arg>
           </args>
         </function>
         <function>
-          <name>daps_init</name>
-          <externalName>daps_init</externalName>
+          <name>native_daps_init</name>
+          <externalName>native_daps_init</externalName>
           <kind>11</kind>
-          <help>daps_init(tag, url)</help>
+          <help>native_daps_init(tag, url)</help>
           <returnType>2</returnType>
           <argCount>2</argCount>
           <args>
             <arg>1</arg>
             <arg>1</arg>
           </args>
+        </function>
+        <function>
+          <name>native_daps_ready_audio</name>
+          <externalName>native_daps_ready_audio</externalName>
+          <kind>11</kind>
+          <help>native_daps_ready_audio(filename)</help>
+          <returnType>2</returnType>
+          <argCount>1</argCount>
+          <args>
+            <arg>1</arg>
+          </args>
+        </function>
+        <function>
+          <name>native_daps_create_uuid</name>
+          <externalName>native_daps_create_uuid</externalName>
+          <kind>11</kind>
+          <help>native_daps_create_uuid()</help>
+          <returnType>1</returnType>
+          <argCount>0</argCount>
+          <args/>
         </function>
       </functions>
       <constants/>
